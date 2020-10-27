@@ -1,0 +1,24 @@
+import dotenv from 'dotenv'
+dotenv.config()
+const config = {
+  nodeEnv: process.env.NODE_ENV,
+  logTypes: process.env.LOG_TYPES,
+  grayLog: {
+    isOpen: process.env.GRAYLOG_OPEN * 1,
+    connect: {
+      host: process.env.GRAYLOG_HOST,
+      port: process.env.GRAYLOG_PORT,
+    },
+    facility: process.env.GRAYLOG_FACILITY,
+    bufferSize: process.env.GRAYLOG_BUFFERSIZE,
+  },
+  socketServer: {
+    port: process.env.SOCKET_SERVER_PORT * 1,
+    host: process.env.SOCKET_SERVER_ADDRESS,
+  },
+  socketClient: {
+    address: process.env.SOCKET_CLIENT_ADDRESS
+  }
+}
+
+export default config

@@ -1,0 +1,7 @@
+/.env
+/docker-compose.yml
+/.idea/
+/logs
+/node_modules
+/media
+/yarn-error.log
