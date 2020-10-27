@@ -1,0 +1,15 @@
+version: '3'
+services:
+  tri-websocket:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tri_websocket_server_image
+    restart: always
+    container_name: tri_websocket_server
+    ports:
+      - "3001:3001"
+    volumes:
+      - .:/var/www
+    command: 'yarn start'
+
