@@ -14,8 +14,10 @@ const config = {
   },
   socketServer: {
     port: process.env.SOCKET_SERVER_PORT * 1,
-    host: process.env.SOCKET_SERVER_ADDRESS,
+    // host: process.env.SOCKET_SERVER_ADDRESS,
   },
+
+  // 要連結到語音辨識系統的client
   socketClient: {
     address: process.env.SOCKET_CLIENT_ADDRESS
   }
