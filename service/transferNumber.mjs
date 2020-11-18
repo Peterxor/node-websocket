@@ -1,5 +1,17 @@
 const transferNumber = (number) => {
     switch (number) {
+        case 'negative five':
+            return '-5'
+        case 'negative four':
+            return '-4'
+        case 'negative three':
+            return '-3'
+        case 'negative two':
+            return '-2'
+        case 'negative one':
+            return '-1'
+        case 'zero':
+            return '0'
         case 'one':
             return '1'
         case 'two':
@@ -22,6 +34,56 @@ const transferNumber = (number) => {
             return '10'
         case 'eleven':
             return '11'
+        case 'twelve':
+            return '12'
+        case 'thirteen':
+            return '13'
+        case 'fourteen':
+            return '14'
+        case 'fifteen':
+            return '15'
+        case '負五':
+            return '-5'
+        case '負四':
+            return '-4'
+        case '負三':
+            return '-3'
+        case '負二':
+            return '-2'
+        case '負一':
+            return '-1'
+        case '零':
+            return '0'
+        case '一':
+            return '1'
+        case '二':
+            return '2'
+        case '三':
+            return '3'
+        case '四':
+            return '4'
+        case '五':
+            return '5'
+        case '六':
+            return '6'
+        case '七':
+            return '7'
+        case '八':
+            return '8'
+        case '九':
+            return '9'
+        case '十':
+            return '10'
+        case '十一':
+            return '11'
+        case '十二':
+            return '12'
+        case '十三':
+            return '13'
+        case '十四':
+            return '14'
+        case '十五':
+            return '15'
         case '一一':
             return '11'
         case '一二':

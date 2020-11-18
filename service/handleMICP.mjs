@@ -2,22 +2,28 @@ import _ from "lodash";
 import transferNumber from './transferNumber.mjs'
 
 
-const handleMICP = async (slice, tempText = '') => {
-    let returnText
-    if (tempText !== '') {
-        returnText = tempText
-    }
-    for (let i = 0; i < slice.length; i++) {
-        if (_.includes(englishNumber, slice[i])) {
-            returnText += transferNumber(slice[i])
-            if (slice[i + 1] && _.includes(englishNumber, slice[i + 1])) {
-                returnText += transferNumber
-            }
-        } else if (_.includes(chineseNumber, slice[i])) {
-            returnText += transferNumber(slice[i])
+const handleMICP = async (texts, redisData) => {
+    let text = ''
+    let number = ''
+    for (let t of texts) {
+        if (_.includes(sessionType, t)) {
+            text += t + ','
+        }
+        if (_.includes(englishNumber, t)) {
+            text += transferNumber(t)
+            number += transferNumber(t)
+        }
+
+        if (_.includes(chineseNumber, t)) {
+            text += transferNumber(t)
+            number += transferNumber(t)
         }
     }
-    return Promise.resolve(returnText)
+    console.log(3, redisData)
+    if (_.includes(redisData.micp, number)) {
+        return Promise.reject(new Error(`${number} have missing , implant , crown , pontic status`))
+    }
+    return Promise.resolve({text, number})
 }
 
 export default handleMICP

@@ -1,128 +1,119 @@
 import _ from 'lodash'
-import logger from '../lib/logger.mjs'
 import {to} from 'await-to-js'
-import {handleMICP, checkStart} from './index.mjs'
+import {handleMICP, checkStart, handleRP, handleMF, nextTeeth} from './index.mjs'
 
 const repeatTag = ['missing', 'implant', 'crown', 'pontic']
 
 const handleKankoneJson = async (redisData, data) => {
-    redisData.record.push(data)
-    // console.log(data)
-
-    let finalData = []
-
-    //確認暫存的session
-    if (redisData.session.type) {
-
-    } else {
-        // session為空值
-        if (data.status === 'ok') {
-            for await (let dataContent of data.data) {
-                let finalText = ''
-                let text = dataContent.text
-                let textArray = text.split(' ')
-                let putArray = []
-                if (textArray.length > 0) {
-                    if (redisData.info.active !== 'start') {
-                        const [checkErr, response] = await to(checkStart(textArray))
-                        if (checkErr) {
-                            logger.error(`check evas go error: ${checkErr}`)
-                            break
+    let resultText = 'still not begin, please say evas go to start'
+    let result = null
+    if (data.status === 'ok') {
+        if (data.data[0].text) {
+            let texts = data.data[0].text.split(' ')
+            let err = null
+            if (texts[0] === 'evas' || texts[0] === 'EVAS') {
+                redisData.active = true
+                resultText = data.data[0].text.toLowerCase()
+            } else if (redisData.active) {
+                switch (texts[0]) {
+                    case 'missing':
+                    case 'implant':
+                    case 'crown':
+                    case 'pontic':
+                        [err, result] = await to(handleMICP(texts, redisData))
+                        if (result) {
+                            resultText = result.text
+                            redisData.micp.push(result.number)
                         }
-                        finalText = 'evas go'
-                        redisData.info.active = response.active
-                        putArray = response.array
-                    }
-                    if (redisData.info.active === 'start') {
-                        const [handleErr, result] = await to(handleText(redisData.session, putArray))
-                        redisData.session = result.session
-                        finalText = finalText === 'evas go' ? finalText + ',' + result.text : result.text
-                    }
+                        break
+                    case 'recession':
+                    case 'PD':
+                    case 'Probing':
+                    case 'plague':
+                    case 'BOP':
+                    case 'Bleeding':
+                        redisData.sessionType = 'RP'
+                        if (texts[0] === 'Probing') {
+                            redisData.sessionRecord = ['PD', texts[2]]
+                            resultText = redisData.sessionRecord.join(',')
+                        } else if (texts[0] === 'plague') {
+                            texts[0] = 'Plague'
+                            redisData.sessionRecord = texts
+                            resultText = texts.join(',')
+                        } else if (texts[0] === 'Bleeding') {
+                            redisData.sessionRecord = ['BOP', texts[3]]
+                            resultText = redisData.sessionRecord.join(',')
+                        } else {
+                            redisData.sessionRecord = texts
+                            resultText = texts.join(',')
+                        }
+                        redisData.sessionTeeths = []
+                        break
+                    case 'Mobility':
+                    case 'furcation':
+                        redisData.sessionType = 'MF'
+                        redisData.sessionRecord.push(texts[0])
+                        resultText = texts[0]
+                        break
+                    case 'finish':
+                        redisData.active = false
+                        break
+                    default:
+                        resultText = 'it cant be identified'
+                        switch (redisData.sessionType) {
+                            case 'RP':
+                                [err, result] = await to(handleRP(texts, redisData))
+                                if (result) {
+                                    resultText = result.text
+                                    if (result.redis.sessionRecord) {
+                                        redisData.sessionRecord.push(result.redis.sessionRecord)
+                                    }
+                                    if (result.redis.sessionTeeths) {
+                                        redisData.sessionTeeths = result.redis.sessionTeeths
+                                        if (redisData.sessionTeeths.length >= 3) {
+                                            resultText = redisData.sessionRecord.join(',') + ',' + redisData.sessionTeeths.join(' ')
+                                            let [nextErr, next] = await to(nextTeeth(redisData))
+                                            if (nextErr) {
+                                                return Promise.reject(nextErr)
+                                            }
+                                            redisData.sessionRecord[2] = next
+                                            redisData.sessionTeeths = []
+                                            if (!next) {
+                                                redisData.sessionType = ''
+                                                redisData.sessionRecord = []
+                                                redisData.sessionTeeths = []
+                                            }
+                                        } else {
+                                            resultText = ''
+                                        }
+                                    }
+
+                                }
+                                break
+                            case 'MF':
+                                [err, result] = await to(handleMF(texts, redisData))
+                                if (result) {
+                                    resultText = result.redis.sessionRecord.join(',')
+                                    redisData.sessionType = ''
+                                    redisData.sessionRecord = []
+                                }
+                                break
+                        }
+
+                        break
                 }
-                dataContent.text = finalText
-                finalData.push(dataContent)
             }
-            data.data = finalData
-        }
-    }
-    // console.log(data)
-    // console.log(redisData.record[0].data)
-    return Promise.resolve({
-        redis: redisData,
-        data,
-    })
-}
 
-const handleTag = async (tag, array, tempText) => {
-    let result = ''
-    switch (tag) {
-        case 'missing':
-            let [err, text] = await to(handleMICP(array, tempText))
             if (err) {
-                logger.error(err)
-            }
-            result = text
-    }
-    return Promise.resolve(result)
-}
-
-const handleText = async (session, slice) => {
-    if (slice.length <= 0) {
-        return Promise.resolve({
-            session,
-            text: ''
-        })
-    }
-    let tag = session.type
-    let finalArray = []
-    let totalProgress = {
-        missing: [],
-        implant: [],
-        crown: [],
-        pontic: [],
-        recession: [],
-        PD: [],
-        mobility: [],
-        furcation: [],
-        plague: [],
-        BOP: [],
-    }
-
-    // 如果今天tag不再任何一個session
-    if (tag === '' && !_.includes(global.sessionType, slice[0])) {
-        //slice的第一個值必須是session指令
-        return Promise.resolve({
-            session: session,
-            text: '',
-        })
-    } else if (tag === '') {
-        tag = slice[0]
-    }
-    for await (let element of slice) {
-        // 如果element是session指令
-        if (_.includes(global.sessionType, element)) {
-            let [err, result] = await to(handleTag(tag, totalProgress[tag], session.tempText))
-            if (err) {
-                logger.error(err)
                 return Promise.reject(err)
             }
-            tag = element
-            session.tempText = ''
-            totalProgress[tag] = []
-            finalArray.push(result)
+        } else {
+            return Promise.reject(new Error('no text'))
         }
-        totalProgress[tag].push(element)
     }
-    let [err, result] = await to(handleTag(tag, totalProgress[tag], session.tempText))
-    if (err) {
-        logger.error(err)
-        return Promise.reject(err)
-    }
-    session.tempText = result
-    finalArray.push(result)
     return Promise.resolve({
-        session: session,
-        text: finalArray.join(',')
+        redis: redisData,
+        text: {text: resultText},
     })
 }
 
