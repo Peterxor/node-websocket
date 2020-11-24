@@ -16,7 +16,10 @@ const config = {
     port: process.env.SOCKET_SERVER_PORT * 1,
     // host: process.env.SOCKET_SERVER_ADDRESS,
   },
-  redisHost: process.env.REDIS_URL,
+  redis: {
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
+  },
 
   // 要連結到語音辨識系統的client
   socketClient: {
