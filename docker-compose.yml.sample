@@ -10,6 +10,5 @@ services:
     ports:
       - "3001:3001"
     volumes:
-      - .:/var/www
-    command: 'yarn start'
-
+      - ./:/var/www
+    command: bash -c "yarn install && yarn start"
