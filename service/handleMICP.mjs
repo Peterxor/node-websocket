@@ -19,9 +19,9 @@ const handleMICP = async (texts, redisData) => {
             number += transferNumber(t)
         }
     }
-    console.log(3, redisData)
+    // console.log(3, redisData)
     if (_.includes(redisData.micp, number)) {
-        return Promise.reject(new Error(`${number} have missing , implant , crown , pontic status`))
+        return Promise.reject(new Error(`E011:出現重複Missing/Implant/Crown/Pontic牙位`))
     }
     return Promise.resolve({text, number})
 }

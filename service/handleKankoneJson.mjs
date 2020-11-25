@@ -5,8 +5,9 @@ import {handleMICP, checkStart, handleRP, handleMF, nextTeeth} from './index.mjs
 const repeatTag = ['missing', 'implant', 'crown', 'pontic']
 
 const handleKankoneJson = async (redisData, data) => {
-    let resultText = 'still not begin, please say evas go to start'
+    let resultText = 'E001:尚未啟動 EVAS GO'
     let result = null
+    let textArray = []
     if (data.status === 'ok') {
         if (data.data[0].text) {
             let texts = data.data[0].text.split(' ')
@@ -33,33 +34,50 @@ const handleKankoneJson = async (redisData, data) => {
                     case 'BOP':
                     case 'Bleeding':
                         redisData.sessionType = 'RP'
-                        if (texts[0] === 'Probing') {
-                            redisData.sessionRecord = ['PD', texts[2]]
-                            resultText = redisData.sessionRecord.join(',')
+                        if (texts[0] === 'Probing' && texts[1] === 'depth') {
+                            if (_.includes(['buccal', 'palatal', 'lingual'], texts[2])) {
+                                redisData.sessionRecord = ['PD', texts[2]]
+                                resultText = redisData.sessionRecord.join(',')
+                            } else {
+                                err = new Error('E002:非主要記錄段落啟動關鍵字(Missing/Implant/Crown/Pontic/Recession/PD/Mobility/Furcation/Plaque/BOP)')
+                            }
                         } else if (texts[0] === 'plague') {
-                            texts[0] = 'Plague'
-                            redisData.sessionRecord = texts
-                            resultText = texts.join(',')
-                        } else if (texts[0] === 'Bleeding') {
-                            redisData.sessionRecord = ['BOP', texts[3]]
-                            resultText = redisData.sessionRecord.join(',')
+                            if (_.includes(['buccal', 'palatal', 'lingual'], texts[1])) {
+                                texts[0] = 'Plague'
+                                redisData.sessionRecord = texts
+                                resultText = texts.join(',')
+                            } else {
+                                err = new Error('E002:非主要記錄段落啟動關鍵字(Missing/Implant/Crown/Pontic/Recession/PD/Mobility/Furcation/Plaque/BOP)')
+                            }
+                        } else if (texts[0] === 'Bleeding' && texts[1] === 'on' && texts[2] === 'probing') {
+                            if (_.includes(['buccal', 'palatal', 'lingual'], texts[3])) {
+                                redisData.sessionRecord = ['BOP', texts[3]]
+                                resultText = redisData.sessionRecord.join(',')
+                            } else {
+                                err = new Error('E002:非主要記錄段落啟動關鍵字(Missing/Implant/Crown/Pontic/Recession/PD/Mobility/Furcation/Plaque/BOP)')
+                            }
                         } else {
-                            redisData.sessionRecord = texts
-                            resultText = texts.join(',')
+                            if (_.includes(['buccal', 'palatal', 'lingual'], texts[1])) {
+                                redisData.sessionRecord = texts
+                                resultText = texts.join(',')
+                            } else {
+                                err = new Error('E002:非主要記錄段落啟動關鍵字(Missing/Implant/Crown/Pontic/Recession/PD/Mobility/Furcation/Plaque/BOP)')
+                            }
                         }
                         redisData.sessionTeeths = []
                         break
                     case 'Mobility':
                     case 'furcation':
                         redisData.sessionType = 'MF'
-                        redisData.sessionRecord.push(texts[0])
+                        redisData.sessionRecord = [texts[0]]
                         resultText = texts[0]
                         break
                     case 'finish':
                         redisData.active = false
+                        resultText = 'finish'
                         break
                     default:
-                        resultText = 'it cant be identified'
+                        resultText = 'E002:非主要記錄段落啟動關鍵字(Missing/Implant/Crown/Pontic/Recession/PD/Mobility/Furcation/Plaque/BOP)'
                         switch (redisData.sessionType) {
                             case 'RP':
                                 [err, result] = await to(handleRP(texts, redisData))
@@ -70,24 +88,26 @@ const handleKankoneJson = async (redisData, data) => {
                                     }
                                     if (result.redis.sessionTeeths) {
                                         redisData.sessionTeeths = result.redis.sessionTeeths
-                                        if (redisData.sessionTeeths.length >= 3) {
-                                            resultText = redisData.sessionRecord.join(',') + ',' + redisData.sessionTeeths.join(' ')
-                                            let [nextErr, next] = await to(nextTeeth(redisData))
-                                            if (nextErr) {
-                                                return Promise.reject(nextErr)
+                                        let sessionTeeths = redisData.sessionTeeths
+                                        for (let teeth of sessionTeeths) {
+                                            if (teeth.length >= 3) {
+                                                resultText = redisData.sessionRecord.join(',') + ',' + teeth.join(' ')
+                                                textArray.push(resultText)
+                                                redisData.sessionTeeths = _.drop(redisData.sessionTeeths)
+                                                let [nextErr, next] = await to(nextTeeth(redisData))
+                                                if (nextErr) {
+                                                    return Promise.reject(nextErr)
+                                                }
+                                                if (!next) {
+                                                    redisData.sessionType = ''
+                                                    redisData.sessionRecord = []
+                                                    redisData.sessionTeeths = []
+                                                } else {
+                                                    redisData.sessionRecord[2] = next
+                                                }
                                             }
-                                            redisData.sessionRecord[2] = next
-                                            redisData.sessionTeeths = []
-                                            if (!next) {
-                                                redisData.sessionType = ''
-                                                redisData.sessionRecord = []
-                                                redisData.sessionTeeths = []
-                                            }
-                                        } else {
-                                            resultText = ''
                                         }
                                     }
-
                                 }
                                 break
                             case 'MF':
@@ -108,12 +128,16 @@ const handleKankoneJson = async (redisData, data) => {
                 return Promise.reject(err)
             }
         } else {
-            return Promise.reject(new Error('no text'))
+            // return Promise.reject(new Error('no text'))
+            if (redisData.active) {
+                resultText = ''
+            }
         }
     }
     return Promise.resolve({
         redis: redisData,
         text: {text: resultText},
+        textArray,
     })
 }
 
