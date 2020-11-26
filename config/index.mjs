@@ -19,6 +19,7 @@ const config = {
   redis: {
     host: process.env.REDIS_HOST,
     port: process.env.REDIS_PORT,
+    time: process.env.REDIS_TIME,
   },
 
   // 要連結到語音辨識系統的client
