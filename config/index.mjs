@@ -14,6 +14,7 @@ const config = {
   },
   socketServer: {
     port: process.env.SOCKET_SERVER_PORT * 1,
+    waitTime: process.env.SOCKET_AWAIT_TIME * 1,
     // host: process.env.SOCKET_SERVER_ADDRESS,
   },
   redis: {
