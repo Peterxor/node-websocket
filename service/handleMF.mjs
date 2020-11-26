@@ -27,7 +27,7 @@ const handleMF = async (texts, redisData) => {
                 _.includes(['1', '2', '3'], temp3))
             {
                 if (_.includes(redisData.micp, temp0 + temp1)) {
-                    return Promise.reject(new Error(`E0${num}1:${redis.sessionRecord[0]}牙位衝突${temp0 + temp1}`))
+                    return Promise.reject(new Error(`E0${num}0:錯誤的${redis.sessionRecord[0]}牙位${temp0 + temp1}`))
                 }
                 redis.sessionRecord.push(temp0 + temp1)
                 redis.sessionRecord.push(temp2)
@@ -38,7 +38,7 @@ const handleMF = async (texts, redisData) => {
         } else if (texts.length === 3) {
             let temp0 = transferNumber(texts[0])
             if (_.includes(redisData.micp, temp0)) {
-                return Promise.reject(new Error(`E0${num}1:${redis.sessionRecord[0]}牙位衝突${temp0}`))
+                return Promise.reject(new Error(`E0${num}0:錯誤的${redis.sessionRecord[0]}牙位${temp0}`))
             }
             let temp1 = texts[1]
             let temp2 = transferNumber(texts[2])
