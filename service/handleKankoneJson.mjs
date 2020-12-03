@@ -67,6 +67,10 @@ const handleKankoneJson = async (redisData, data) => {
                         redisData.sessionTeeths = []
                         break
                     case 'mobility':
+                        redisData.sessionType = 'MF'
+                        redisData.sessionRecord = ['Mobility']
+                        resultText = 'Mobility'
+                        break
                     case 'furcation':
                         redisData.sessionType = 'MF'
                         redisData.sessionRecord = [texts[0]]
