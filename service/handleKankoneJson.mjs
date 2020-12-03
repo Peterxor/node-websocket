@@ -28,13 +28,13 @@ const handleKankoneJson = async (redisData, data) => {
                         }
                         break
                     case 'recession':
-                    case 'PD':
-                    case 'Probing':
+                    case 'pd':
+                    case 'probing':
                     case 'plague':
-                    case 'BOP':
-                    case 'Bleeding':
+                    case 'bop':
+                    case 'bleeding':
                         redisData.sessionType = 'RP'
-                        if (texts[0] === 'Probing' && texts[1] === 'depth') {
+                        if (texts[0] === 'probing' && texts[1] === 'depth') {
                             if (_.includes(['buccal', 'palatal', 'lingual'], texts[2])) {
                                 redisData.sessionRecord = ['PD', texts[2]]
                                 resultText = redisData.sessionRecord.join(',')
@@ -43,13 +43,13 @@ const handleKankoneJson = async (redisData, data) => {
                             }
                         } else if (texts[0] === 'plague') {
                             if (_.includes(['buccal', 'palatal', 'lingual'], texts[1])) {
-                                texts[0] = 'Plague'
+                                texts[0] = 'plague'
                                 redisData.sessionRecord = texts
                                 resultText = texts.join(',')
                             } else {
                                 err = new Error('E002:非主要記錄段落啟動關鍵字(Missing/Implant/Crown/Pontic/Recession/PD/Mobility/Furcation/Plaque/BOP)')
                             }
-                        } else if (texts[0] === 'Bleeding' && texts[1] === 'on' && texts[2] === 'probing') {
+                        } else if (texts[0] === 'bleeding' && texts[1] === 'on' && texts[2] === 'probing') {
                             if (_.includes(['buccal', 'palatal', 'lingual'], texts[3])) {
                                 redisData.sessionRecord = ['BOP', texts[3]]
                                 resultText = redisData.sessionRecord.join(',')
@@ -66,7 +66,7 @@ const handleKankoneJson = async (redisData, data) => {
                         }
                         redisData.sessionTeeths = []
                         break
-                    case 'Mobility':
+                    case 'mobility':
                     case 'furcation':
                         redisData.sessionType = 'MF'
                         redisData.sessionRecord = [texts[0]]
