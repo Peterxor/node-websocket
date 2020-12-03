@@ -19,7 +19,7 @@ const handleRP = async (texts, redisData) => {
         case 'PD':
             errNum = '3'
             break
-        case 'Plague':
+        case 'Plaque':
             errNum = '6'
             numRange = '0 or 1'
             break

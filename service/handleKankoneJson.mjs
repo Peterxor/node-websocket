@@ -30,7 +30,7 @@ const handleKankoneJson = async (redisData, data) => {
                     case 'recession':
                     case 'pd':
                     case 'probing':
-                    case 'plague':
+                    case 'plaque':
                     case 'bop':
                     case 'bleeding':
                         redisData.sessionType = 'RP'
@@ -41,9 +41,9 @@ const handleKankoneJson = async (redisData, data) => {
                             } else {
                                 err = new Error('E002:非主要記錄段落啟動關鍵字(Missing/Implant/Crown/Pontic/Recession/PD/Mobility/Furcation/Plaque/BOP)')
                             }
-                        } else if (texts[0] === 'plague') {
+                        } else if (texts[0] === 'plaque') {
                             if (_.includes(['buccal', 'palatal', 'lingual'], texts[1])) {
-                                texts[0] = 'Plague'
+                                texts[0] = 'Plaque'
                                 redisData.sessionRecord = texts
                                 resultText = texts.join(',')
                             } else {
