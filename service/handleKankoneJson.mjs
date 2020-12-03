@@ -43,7 +43,7 @@ const handleKankoneJson = async (redisData, data) => {
                             }
                         } else if (texts[0] === 'plague') {
                             if (_.includes(['buccal', 'palatal', 'lingual'], texts[1])) {
-                                texts[0] = 'plague'
+                                texts[0] = 'Plague'
                                 redisData.sessionRecord = texts
                                 resultText = texts.join(',')
                             } else {
@@ -58,6 +58,12 @@ const handleKankoneJson = async (redisData, data) => {
                             }
                         } else {
                             if (_.includes(['buccal', 'palatal', 'lingual'], texts[1])) {
+                                if (texts[0] === 'bop') {
+                                    texts[0] = 'BOP'
+                                }
+                                if (texts[0] === 'pd') {
+                                    texts[0] = 'PD'
+                                }
                                 redisData.sessionRecord = texts
                                 resultText = texts.join(',')
                             } else {
@@ -118,8 +124,9 @@ const handleKankoneJson = async (redisData, data) => {
                                 [err, result] = await to(handleMF(texts, redisData))
                                 if (result) {
                                     resultText = result.redis.sessionRecord.join(',')
-                                    redisData.sessionType = ''
-                                    redisData.sessionRecord = []
+                                    redisData.sessionRecord = [result.redis.sessionRecord[0]]
+                                    // redisData.sessionType = ''
+                                    // redisData.sessionRecord = []
                                 }
                                 break
                         }
