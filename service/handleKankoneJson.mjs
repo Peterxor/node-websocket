@@ -83,8 +83,13 @@ const handleKankoneJson = async (redisData, data) => {
                         resultText = texts[0]
                         break
                     case 'finish':
-                        redisData.active = false
+                        redisData = {
+                            active: false,
+                            sessionType: '',
+                            micp: [],
+                        }
                         resultText = 'finish'
+
                         break
                     default:
                         resultText = 'E002:非主要記錄段落啟動關鍵字(Missing/Implant/Crown/Pontic/Recession/PD/Mobility/Furcation/Plaque/BOP)'
@@ -94,7 +99,12 @@ const handleKankoneJson = async (redisData, data) => {
                                 if (result) {
                                     resultText = result.text
                                     if (result.redis.sessionRecord) {
-                                        redisData.sessionRecord.push(result.redis.sessionRecord)
+                                        if (redisData.sessionRecord.length === 3) {
+                                            redisData.sessionRecord[2] = result.redis.sessionRecord
+                                            redisData.sessionTeeths = []
+                                        } else {
+                                            redisData.sessionRecord.push(result.redis.sessionRecord)
+                                        }
                                     }
                                     if (result.redis.sessionTeeths) {
                                         redisData.sessionTeeths = result.redis.sessionTeeths
