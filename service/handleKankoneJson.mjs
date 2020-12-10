@@ -4,7 +4,7 @@ import {handleMICP, checkStart, handleRP, handleMF, nextTeeth} from './index.mjs
 
 const repeatTag = ['missing', 'implant', 'crown', 'pontic']
 
-const handleKankoneJson = async (redisData, data) => {
+const handleKankoneJson = async (redisData, data, socketType = 1) => {
     let resultText = 'E001:尚未啟動 EVAS GO'
     let result = null
     let textArray = []
@@ -196,7 +196,7 @@ const handleKankoneJson = async (redisData, data) => {
                 }
             }
 
-            if (err) {
+            if (err && socketType !== 2) {
                 return Promise.reject(err)
             }
         } else {
