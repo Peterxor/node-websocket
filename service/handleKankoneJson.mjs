@@ -9,6 +9,7 @@ const handleKankoneJson = async (redisData, data) => {
     let result = null
     let textArray = []
     let jsonRecord = null
+    let tempJsonRecord = null
     if (data.status === 'ok') {
         if (data.data[0].text) {
             let texts = data.data[0].text.split(' ')
@@ -87,7 +88,7 @@ const handleKankoneJson = async (redisData, data) => {
                         resultText = texts[0]
                         break
                     case 'finish':
-                        jsonRecord = redisData.jsonRecord
+                        tempJsonRecord = redisData.jsonRecord
                         redisData = {
                             active: false,
                             sessionType: '',
@@ -204,6 +205,10 @@ const handleKankoneJson = async (redisData, data) => {
                 resultText = ''
             }
         }
+    }
+    jsonRecord = redisData.jsonRecord
+    if (tempJsonRecord) {
+        jsonRecord = tempJsonRecord
     }
     return Promise.resolve({
         redis: redisData,
